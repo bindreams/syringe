@@ -6,6 +6,7 @@
 #include <span>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "deps/CLI11.hpp"
@@ -83,8 +84,24 @@ Configuration parse_cli(int argc, char** argv) {
 	}
 }
 
-/// Produce a file definition string and a file usage string for injecting into the template.
-std::pair<std::string, std::string> file_strings(fs::path path, std::string_view display_path) {
+std::string file_hash(fs::path path) {
+	std::ifstream ifs(path, std::ios::binary);
+
+	std::array<uint8_t, 10240> buffer;
+	mm::sha256_stream hasher;
+
+	do {
+		ifs.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+		std::span data(buffer.begin(), ifs.gcount());
+
+		hasher << data;
+	} while (ifs);
+
+	return mm::to_string(hasher.finish());
+}
+
+/// Produce a file definition string for injecting into the template.
+std::string file_definition(fs::path path, std::string_view hash) {
 	std::ifstream ifs(path, std::ios::binary);
 
 	std::array<uint8_t, 10240> buffer;
@@ -108,12 +125,12 @@ std::pair<std::string, std::string> file_strings(fs::path path, std::string_view
 	} while (ifs);
 
 	std::string cpp_data = cpp_data_stream.str();
-	std::string digest = mm::to_string(hasher.finish());
+	return fmt::format(template_file_definition, cpp_data, size, hash);
+}
 
-	std::string file_definition = fmt::format(template_file_definition, cpp_data, size, digest);
-	std::string file_usage = fmt::format(template_file_usage, display_path, digest);
-
-	return {file_definition, file_usage};
+/// Produce a file usage string for injecting into the template.
+std::string file_usage(std::string_view display_path, std::string_view hash) {
+	return fmt::format(template_file_usage, display_path, hash);
 }
 
 int main(int argc, char** argv) {
@@ -121,11 +138,14 @@ int main(int argc, char** argv) {
 
 	std::vector<std::string> definitions;
 	std::vector<std::string> usages;
+	std::unordered_set<std::string> hashes;
 
 	for (auto& [path, display_path] : config.paths) {
-		auto [def, usage] = file_strings(path, display_path);
-		definitions.push_back(std::move(def));
-		usages.push_back(std::move(usage));
+		std::string hash = file_hash(path);
+		auto [_, is_new] = hashes.insert(hash);
+
+		if (is_new) definitions.push_back(file_definition(path, hash));
+		usages.push_back(file_usage(display_path, hash));
 	}
 
 	fmt::print(
