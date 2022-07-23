@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -16,7 +17,6 @@
 #include "templates.hpp"
 #include "util.hpp"
 
-namespace mm = mincemeat;
 namespace fs = std::filesystem;
 
 struct Configuration {
@@ -85,6 +85,7 @@ Configuration parse_cli(int argc, char** argv) {
 }
 
 std::string file_hash(fs::path path) {
+	namespace mm = mincemeat;
 	std::ifstream ifs(path, std::ios::binary);
 
 	std::array<uint8_t, 10240> buffer;
@@ -105,7 +106,6 @@ std::string file_definition(fs::path path, std::string_view hash) {
 	std::ifstream ifs(path, std::ios::binary);
 
 	std::array<uint8_t, 10240> buffer;
-	mm::sha256_stream hasher;
 	std::stringstream cpp_data_stream;
 	cpp_data_stream << std::hex << std::showbase;
 	std::size_t size = 0;
@@ -120,8 +120,6 @@ std::string file_definition(fs::path path, std::string_view hash) {
 			cpp_data_stream << sep << int(byte);
 			sep = ", ";
 		}
-
-		hasher << data;
 	} while (ifs);
 
 	std::string cpp_data = cpp_data_stream.str();
@@ -133,9 +131,7 @@ std::string file_usage(std::string_view display_path, std::string_view hash) {
 	return fmt::format(template_file_usage, display_path, hash);
 }
 
-int main(int argc, char** argv) {
-	auto config = parse_cli(argc, argv);
-
+std::string syringe(const Configuration& config) {
 	std::vector<std::string> definitions;
 	std::vector<std::string> usages;
 	std::unordered_set<std::string> hashes;
@@ -148,7 +144,7 @@ int main(int argc, char** argv) {
 		usages.push_back(file_usage(display_path, hash));
 	}
 
-	fmt::print(
+	return fmt::format(
 		template_file,
 		config.namespace_name.empty() ? "" : fmt::format("namespace {} {{", config.namespace_name),
 		config.namespace_name.empty() ? "" : fmt::format("}}  // namespace {}", config.namespace_name),
@@ -158,4 +154,8 @@ int main(int argc, char** argv) {
 		join(usages, "\n"),
 		cxmap
 	);
+}
+
+std::string syringe(int argc, char** argv) {
+	return syringe(parse_cli(argc, argv));
 }
