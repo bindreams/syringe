@@ -8,7 +8,7 @@
 	"configurePresets": [
 		{
 			"name": "default",
-			"displayName": "Defaul Config",
+			"displayName": "Default Config",
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/build",
 			"installDir": "dist",
