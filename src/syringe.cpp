@@ -89,12 +89,12 @@ std::pair<std::string, std::string> file_strings(fs::path path, std::string_view
 	cpp_data_stream << std::hex << std::showbase;
 	std::size_t size = 0;
 
+	std::string_view sep = "";
 	do {
 		ifs.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
 		size += ifs.gcount();
 		std::span data(buffer.begin(), ifs.gcount());
 
-		std::string_view sep = "";
 		for (std::uint8_t byte : data) {
 			cpp_data_stream << sep << int(byte);
 			sep = ", ";
