@@ -8,7 +8,7 @@
 
 using namespace std;
 
-/// Play audio from bytes. Not important for this example.
+/// Not important for this example.
 void play_music_from_bytes(const uint8_t* data, size_t size) {
 	auto data_callback = [](ma_device* pDevice, void* pOutput, const void*, ma_uint32 frameCount) {
 		auto pDecoder = static_cast<ma_decoder*>(pDevice->pUserData);
