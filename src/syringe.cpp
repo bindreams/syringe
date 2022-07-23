@@ -58,19 +58,23 @@ Configuration parse_cli(int argc, char** argv) {
 
 		// Compute paths -----------------------------------------------------------------------------------------------
 		std::string final_prefix = prefix.value_or("");
-		if (relative_to.has_value()) {
-			for (auto& path : paths) {
+
+		for (auto& path : paths) {
+			std::string final_path_str = final_prefix;
+
+			if (relative_to.has_value()) {
 				fs::path final_path = relative_canonical(path, *relative_to);
 				if (final_path.empty()) {
 					throw CLI::ValidationError(fmt::format("{} is not a base dir of {}", *relative_to, path));
 				}
 
-				config.paths[path.string()] = final_prefix + final_path.string();
+				final_path_str += final_path.string();
+			} else {
+				final_path_str += path.string();
 			}
-		} else {
-			for (auto& path : paths) {
-				config.paths[path.string()] = final_prefix + path.string();
-			}
+
+			std::ranges::replace(final_path_str, '\\', '/');
+			config.paths[path.string()] = final_path_str;
 		}
 
 		return config;
