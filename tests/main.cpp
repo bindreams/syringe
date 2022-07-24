@@ -113,9 +113,8 @@ TEST_CASE("Inject 1MiB_null.bin") {
 
 	size_t i = 0;
 	for (; i < lines.size(); ++i) {
-		// CTRE crashes on full match lol
 		string_view line = lines[i];
-		auto [match, size, digest] = match_definition_until_data(line);
+		auto [match, size, digest] = match_definition_until_data(line);  // CTRE crashes on full match lol
 		if (match) {
 			definition_found = true;
 
@@ -145,4 +144,26 @@ TEST_CASE("Inject 1MiB_null.bin") {
 
 	CHECK(definition_found);
 	CHECK(usage_found);
+}
+
+TEST_CASE("Inject <complex filename>" * doctest::skip()) {
+	string inject_file = syringe({
+		.paths =
+			{{"data/René Magritte - Ceci n'est pas une pipe 🚬.jpg", "René Magritte - Ceci n'est pas une pipe 🚬.jpg"}},
+		.namespace_name = "",
+		.variable_name = "resources",
+	});
+	vector<string_view> lines = split(inject_file, "\n");
+
+	for (size_t i = 0; i < lines.size(); ++i) {
+		auto [match, filename, digest] = match_usage(lines[i]);
+		if (match) {
+			CHECK(filename == "René Magritte - Ceci n'est pas une pipe 🚬.jpg");
+			CHECK(digest == "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58");
+
+			return;
+		}
+	}
+
+	FAIL("Usage line was not found");
 }
