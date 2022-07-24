@@ -7,18 +7,16 @@
 	},
 	"configurePresets": [
 		{
-			"name": "windows-dev",
-			"displayName": "Windows Developer Config",
+			"name": "default",
+			"displayName": "Default Config",
 			"generator": "Ninja Multi-Config",
 			"binaryDir": "${sourceDir}/build",
 			"installDir": "dist",
-			"toolchainFile": "~/vcpkg/scripts/buildsystems/vcpkg.cmake",
 			"cacheVariables": {
-				"CMAKE_C_COMPILER": "clang",
-				"CMAKE_CXX_COMPILER": "clang++",
 				"CMAKE_CONFIGURATION_TYPES": "Debug;Release",
-				"CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-				"VCPKG_TARGET_TRIPLET": "x64-windows-static"
+				"CMAKE_EXPORT_COMPILE_COMMANDS": true,
+				"SYRINGE_TESTS": true,
+				"SYRINGE_EXAMPLES": true
 			}
 		}
 	]
