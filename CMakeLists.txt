@@ -25,5 +25,10 @@ if(SYRINGE_TESTS)
 endif()
 
 if(SYRINGE_EXAMPLES)
+	# Usually it's expected that syringe will be properly installed before usage.
+	# For the example, the workaround is to set SYRINGE_EXECUTABLE cache variable to the target name.
+	# When syringe.cmake is included, it will use this built target instead of searching for an install executable.
+	set(SYRINGE_EXECUTABLE syringe CACHE STRING "Syringe executable target")
 	add_subdirectory(example)
+	add_dependencies(syringe_example syringe)
 endif()
