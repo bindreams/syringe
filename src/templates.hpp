@@ -3,8 +3,8 @@
 
 using namespace fmt::literals;
 
-constexpr std::string_view cxmap = R"(
-template<typename Key, typename Value, std::size_t MaxSize, std::strict_weak_order<Key, Key> Compare = std::less<>>
+constexpr std::string_view cxmap =
+	R"(template<typename Key, typename Value, std::size_t MaxSize, std::strict_weak_order<Key, Key> Compare = std::less<>>
 class cxmap {
 public:
 	// Element access ==================================================================================================
@@ -151,8 +151,7 @@ private:
 
 	std::array<std::pair<Key, Value>, MaxSize> m_data{};
 	std::size_t m_size = 0;
-};
-)";
+};)";
 
 /**
  * @brief Template for a complete resource file.
@@ -188,17 +187,13 @@ namespace syringe {{
 
 }}  // namespace syringe
 
-{0}
-
-constexpr auto {2} = []() {{
+{0}constexpr auto {2} = []() {{
 	syringe::cxmap<std::string_view, std::span<const std::uint8_t>, {3}> resources;
 
 {5}
 
 	return std::as_const(resources);
-}}();
-
-{1}
+}}();{1}
 )");
 
 /**

@@ -117,7 +117,7 @@ std::string file_definition(fs::path path, std::string_view hash) {
 		std::span data(buffer.begin(), ifs.gcount());
 
 		for (std::uint8_t byte : data) {
-			cpp_data_stream << sep << int(byte);
+			cpp_data_stream << sep << fmt::format("{:#04x}", int(byte));
 			sep = ", ";
 		}
 	} while (ifs);
@@ -146,8 +146,8 @@ std::string syringe(const Configuration& config) {
 
 	return fmt::format(
 		template_file,
-		config.namespace_name.empty() ? "" : fmt::format("namespace {} {{", config.namespace_name),
-		config.namespace_name.empty() ? "" : fmt::format("}}  // namespace {}", config.namespace_name),
+		config.namespace_name.empty() ? "" : fmt::format("namespace {} {{\n\n", config.namespace_name),
+		config.namespace_name.empty() ? "" : fmt::format("\n\n}}  // namespace {}", config.namespace_name),
 		config.variable_name,
 		config.paths.size(),
 		join(definitions, "\n"),
