@@ -6,6 +6,7 @@
 #include <ranges>
 #include <span>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -15,9 +16,9 @@
 #include "deps/mincemeat.hpp"
 
 #include "templates.hpp"
+#include "unicode.hpp"
 #include "util.hpp"
-
-namespace fs = std::filesystem;
+#include "validators.hpp"
 
 struct Configuration {
 	std::unordered_map<std::string, std::string> paths;
@@ -25,20 +26,20 @@ struct Configuration {
 	std::string variable_name;
 };
 
-Configuration parse_cli(int argc, char** argv) {
+Configuration parse_cli(int argc, const char* const* argv) {
 	CLI::App app("Inject files into C++ source code.", "syringe");
 
-	std::vector<fs::path> paths;
-	std::optional<fs::path> relative_to;
+	std::vector<std::string> paths;
+	std::optional<std::string> relative_to;
 	std::optional<std::string> prefix;
 	std::string variable;
 
 	// clang-format off
 	app.add_option("paths", paths, "One or more path to files for injecting")
 		->required()
-		->check(CLI::ExistingFile);
+		->check(ExistingFile);
 	app.add_option("-r,--relative", relative_to, "Make paths relative to a directory")
-		->check(CLI::ExistingDirectory);
+		->check(ExistingDirectory);
 	app.add_option("-p,--prefix", prefix, "Prefix resulting paths with a string");
 	app.add_option("--variable", variable, "Variable name for resources, e.g. \"data\" or \"my_namespace::assets\"")
 		->default_val("resources");
@@ -60,22 +61,22 @@ Configuration parse_cli(int argc, char** argv) {
 		// Compute paths -----------------------------------------------------------------------------------------------
 		std::string final_prefix = prefix.value_or("");
 
-		for (auto& path : paths) {
-			std::string final_path_str = final_prefix;
+		for (const std::string& path : paths) {
+			std::string final_path = final_prefix;
 
 			if (relative_to.has_value()) {
-				fs::path final_path = relative_canonical(path, *relative_to);
-				if (final_path.empty()) {
+				std::string normalized_path = narrow(relative_canonical(widen(path), *relative_to).native());
+				if (normalized_path.empty()) {
 					throw CLI::ValidationError(fmt::format("{} is not a base dir of {}", *relative_to, path));
 				}
 
-				final_path_str += final_path.string();
+				final_path += normalized_path;
 			} else {
-				final_path_str += path.string();
+				final_path += path;
 			}
 
-			std::ranges::replace(final_path_str, '\\', '/');
-			config.paths[path.string()] = final_path_str;
+			std::ranges::replace(final_path, '\\', '/');
+			config.paths[path] = final_path;
 		}
 
 		return config;
@@ -84,9 +85,9 @@ Configuration parse_cli(int argc, char** argv) {
 	}
 }
 
-std::string file_hash(fs::path path) {
+std::string file_hash(std::string_view path) {
 	namespace mm = mincemeat;
-	std::ifstream ifs(path, std::ios::binary);
+	std::ifstream ifs(widen(path), std::ios::binary);
 
 	std::array<uint8_t, 10240> buffer;
 	mm::sha256_stream hasher;
@@ -102,8 +103,8 @@ std::string file_hash(fs::path path) {
 }
 
 /// Produce a file definition string for injecting into the template.
-std::string file_definition(fs::path path, std::string_view hash) {
-	std::ifstream ifs(path, std::ios::binary);
+std::string file_definition(std::string_view path, std::string_view hash) {
+	std::ifstream ifs(widen(path), std::ios::binary);
 
 	std::array<uint8_t, 10240> buffer;
 	std::stringstream cpp_data_stream;
@@ -156,6 +157,6 @@ std::string syringe(const Configuration& config) {
 	);
 }
 
-std::string syringe(int argc, char** argv) {
+std::string syringe(int argc, const char* const* argv) {
 	return syringe(parse_cli(argc, argv));
 }

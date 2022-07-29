@@ -10,6 +10,7 @@ add_executable(syringe "src/main.cpp")
 target_include_directories(syringe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_features(syringe PRIVATE cxx_std_20)
 target_compile_warnings(syringe treat_as_errors gnu_all gnu_extra ms_4)
+target_compile_definitions(syringe PRIVATE "WIN32_LEAN_AND_MEAN")
 set_target_properties(syringe PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 install(TARGETS syringe)

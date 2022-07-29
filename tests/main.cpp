@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-#include "deps/ctre.hpp"
+#include "deps/ctre-unicode.hpp"
 #include "syringe.hpp"
 #include "util.hpp"
 
@@ -16,7 +16,7 @@ auto match_definition =
 	ctre::match<R"#(constexpr std::array<std::uint8_t, (\d+)> _(\w+) = \{((?:0x\d\d, )*0x\d\d)\};)#">;
 auto match_definition_empty = ctre::match<R"#(constexpr std::array<std::uint8_t, (\d+)> _(\w+) = \{\};)#">;
 auto match_definition_until_data = ctre::starts_with<R"#(constexpr std::array<std::uint8_t, (\d+)> _(\w+) = \{)#">;
-auto match_usage = ctre::match<R"#(\tresources\["([\w/. ]*)"\] = syringe::_(\w+);)#">;
+auto match_usage = ctre::match<R"#(\tresources\["((?:[^"\\]|\\.)*)"\] = syringe::_(\w+);)#">;
 
 TEST_CASE("Inject abc.txt") {
 	string inject_file = syringe({
@@ -146,20 +146,20 @@ TEST_CASE("Inject 1MiB_null.bin") {
 	CHECK(usage_found);
 }
 
-TEST_CASE("Inject <complex filename>" * doctest::skip()) {
+TEST_CASE("Inject <complex filename>") {
+	string filename = "data/René Magritte - Ceci n'est pas une pipe 🚬.jpg";
 	string inject_file = syringe({
-		.paths =
-			{{"data/René Magritte - Ceci n'est pas une pipe 🚬.jpg", "René Magritte - Ceci n'est pas une pipe 🚬.jpg"}},
+		.paths = {{filename, filename}},
 		.namespace_name = "",
 		.variable_name = "resources",
 	});
 	vector<string_view> lines = split(inject_file, "\n");
 
 	for (size_t i = 0; i < lines.size(); ++i) {
-		auto [match, filename, digest] = match_usage(lines[i]);
+		auto [match, actual_filename, digest] = match_usage(lines[i]);
 		if (match) {
-			CHECK(filename == "René Magritte - Ceci n'est pas une pipe 🚬.jpg");
-			CHECK(digest == "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58");
+			CHECK(actual_filename == filename);
+			CHECK(digest == "3e4d289f4f8e0669a3891494146827f6083a5807b7f47f5ac89c3f53c779343a");
 
 			return;
 		}
