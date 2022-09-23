@@ -9,6 +9,14 @@
 		{
 			"name": "default",
 			"displayName": "Default Config",
+			"binaryDir": "${sourceDir}/build",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "dev",
+			"displayName": "Developer Config",
 			"generator": "Ninja Multi-Config",
 			"binaryDir": "${sourceDir}/build",
 			"installDir": "dist",
