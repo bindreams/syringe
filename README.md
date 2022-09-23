@@ -63,8 +63,10 @@ In summary, `inject_files` is the "raw" version of `target_inject_files`, which 
 When not using CMake, you can directly call the `syringe` binary to create the header file. The options are similar to CMake, and can be inspected with `syringe --help`.
 
 ## C++ interface
-After embedding the files, a header file with their binary contents is created. To use these files you need to include the header from anywhere in your project and access the object you specified during injecting (default is `resources`). This object has a map-like interface. You can iterate over it, call `size()`, and retrieve file contents with `operator[](string_view filename)`.
+After embedding the files, a header file with their binary contents is created. To use these files you need to include the header from anywhere in your project and access the object you specified during injecting (default is `resources`). This object has a map-like interface. You can iterate over it, call `size()`, and retrieve file contents with `operator[]`.
 ```c++
-span<const uint8_t> pic_of_a_dog = resources["dog.jpg"];
+#include <resources.hpp>
+
+constexpr span<const uint8_t> pic_of_a_dog = resources["dog.jpg"];
 ```
 A `span<const uint8_t>` can be easily transformed to `const unsigned char*`, `std::byte` span or any other format of binary data that you prefer.
