@@ -108,7 +108,6 @@ std::string file_definition(std::string_view path, std::string_view hash) {
 
 	std::array<uint8_t, 10240> buffer;
 	std::stringstream cpp_data_stream;
-	cpp_data_stream << std::hex << std::showbase;
 	std::size_t size = 0;
 
 	std::string_view sep = "";
@@ -118,8 +117,8 @@ std::string file_definition(std::string_view path, std::string_view hash) {
 		std::span data(buffer.begin(), ifs.gcount());
 
 		for (std::uint8_t byte : data) {
-			cpp_data_stream << sep << fmt::format("{:#04x}", int(byte));
-			sep = ", ";
+			cpp_data_stream << sep << static_cast<int>(byte);
+			sep = ",";
 		}
 	} while (ifs);
 

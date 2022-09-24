@@ -12,8 +12,7 @@
 
 using namespace std;
 
-auto match_definition =
-	ctre::match<R"#(constexpr std::array<std::uint8_t, (\d+)> _(\w+) = \{((?:0x\d\d, )*0x\d\d)\};)#">;
+auto match_definition = ctre::match<R"#(constexpr std::array<std::uint8_t, (\d+)> _(\w+) = \{((?:\d+,)*\d+)\};)#">;
 auto match_definition_empty = ctre::match<R"#(constexpr std::array<std::uint8_t, (\d+)> _(\w+) = \{\};)#">;
 auto match_definition_until_data = ctre::starts_with<R"#(constexpr std::array<std::uint8_t, (\d+)> _(\w+) = \{)#">;
 auto match_usage = ctre::match<R"#(\tresources\["((?:[^"\\]|\\.)*)"\] = syringe::_(\w+);)#">;
@@ -37,10 +36,10 @@ TEST_CASE("Inject abc.txt") {
 			CHECK(size == "3");
 			CHECK(digest == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 
-			vector<string_view> bytes = split(data.view(), ", ");
-			CHECK(bytes[0] == "0x61");
-			CHECK(bytes[1] == "0x62");
-			CHECK(bytes[2] == "0x63");
+			vector<string_view> bytes = split(data.view(), ",");
+			CHECK(bytes[0] == "97");
+			CHECK(bytes[1] == "98");
+			CHECK(bytes[2] == "99");
 
 			break;
 		}
@@ -121,9 +120,9 @@ TEST_CASE("Inject 1MiB_null.bin") {
 			CHECK(size == "1048576");
 			CHECK(digest == "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58");
 
-			vector<string_view> bytes = split(line.substr(match.size(), line.size() - match.size() - 2), ", ");
+			vector<string_view> bytes = split(line.substr(match.size(), line.size() - match.size() - 2), ",");
 			for (string_view byte : bytes) {
-				CHECK(byte == "0x00");
+				CHECK(byte == "0");
 			}
 
 			break;
