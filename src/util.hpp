@@ -18,8 +18,6 @@ std::filesystem::path relative_canonical(const std::filesystem::path& p, const s
 	return {};
 }
 
-// Remove clang-format off in LLVM 15
-// clang-format off
 template<std::ranges::input_range R>
 requires std::convertible_to<std::ranges::range_value_t<R>, std::string_view>
 std::string join(R&& range, std::string_view separator) {
@@ -33,4 +31,3 @@ std::string join(R&& range, std::string_view separator) {
 
 	return result.str();
 }
-// clang-format on

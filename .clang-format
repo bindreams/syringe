@@ -156,7 +156,7 @@ RawStringFormats:
     CanonicalDelimiter: ''
     BasedOnStyle:    google
 ReflowComments:  true
-#RequiresClausePosition: OwnLine  # clang-format 15
+RequiresClausePosition: OwnLine
 SortIncludes:    true
 SortJavaStaticImport: Before
 SortUsingDeclarations: true
