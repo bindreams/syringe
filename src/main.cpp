@@ -1,11 +1,11 @@
 #include "deps/fmt.hpp"
 #include "syringe.hpp"
-#include "unicode.hpp"
 
-int main(int argc, char** argv) {
+int main(int raw_argc, char** raw_argv) {
+	init_argv(raw_argc, raw_argv);
+
 	try {
-		auto args = init_argv(argc, argv);
-		fmt::print("{}", syringe(args.size(), args.data()));
+		syringe(argc(), argv());
 	} catch (const std::exception& e) {
 		fmt::print(stderr, "{}", e.what());
 		return 1;
