@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17.0)
-project(syringe VERSION 0.1.0)
+project(syringe VERSION 1.0.0)
 
 option(SYRINGE_TESTS "Build tests for syringe" OFF)
 option(SYRINGE_EXAMPLES "Build examples for syringe" OFF)
